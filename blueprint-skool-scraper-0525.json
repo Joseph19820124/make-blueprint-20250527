@@ -1,0 +1,396 @@
+{
+    "name": "Skool靜態網頁爬蟲A 0525",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 2268115,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 300
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "靜態網頁A webhook"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 11,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "name": "path",
+                "scope": "roundtrip",
+                "value": "3"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 300
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "path",
+                        "type": "any",
+                        "label": "path"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 300
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 2,
+                            "module": "http:ActionSendData",
+                            "version": 3,
+                            "parameters": {
+                                "handleErrors": true,
+                                "useNewZLibDeCompress": true
+                            },
+                            "filter": {
+                                "name": "path check",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{11.path}}",
+                                            "b": "1",
+                                            "o": "number:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "ca": "",
+                                "qs": [],
+                                "url": "{{1.events[].message.text}}",
+                                "data": "",
+                                "gzip": true,
+                                "method": "get",
+                                "headers": [],
+                                "timeout": "",
+                                "useMtls": false,
+                                "authPass": "",
+                                "authUser": "",
+                                "bodyType": "raw",
+                                "contentType": "",
+                                "serializeUrl": false,
+                                "shareCookies": false,
+                                "parseResponse": false,
+                                "followRedirect": true,
+                                "useQuerystring": false,
+                                "followAllRedirects": false,
+                                "rejectUnauthorized": true
+                            }
+                        },
+                        {
+                            "id": 5,
+                            "module": "regexp:HTMLToText",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "html": "{{2.data}}",
+                                "newline": "lf",
+                                "uppercaseHeadings": true
+                            }
+                        },
+                        {
+                            "id": 8,
+                            "module": "ai-tools:Ask",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": "將以下的內容, 仔細分類出對分析有幫助的內容(含Skool 名稱及群長名), 並以報告方式呈現, 限制200字\n{{5.text}}"
+                            }
+                        },
+                        {
+                            "id": 10,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "body": "{{8.answer}}",
+                                "status": "200",
+                                "headers": []
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 4,
+                            "module": "http:ActionSendData",
+                            "version": 3,
+                            "parameters": {
+                                "handleErrors": true,
+                                "useNewZLibDeCompress": true
+                            },
+                            "filter": {
+                                "name": "path check",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{11.path}}",
+                                            "b": "2",
+                                            "o": "number:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "ca": "",
+                                "qs": [],
+                                "url": "{{1.events[].message.text}}",
+                                "data": "",
+                                "gzip": true,
+                                "method": "get",
+                                "headers": [],
+                                "timeout": "",
+                                "useMtls": false,
+                                "authPass": "",
+                                "authUser": "",
+                                "bodyType": "raw",
+                                "contentType": "application/json",
+                                "serializeUrl": false,
+                                "shareCookies": false,
+                                "parseResponse": false,
+                                "followRedirect": true,
+                                "useQuerystring": false,
+                                "followAllRedirects": false,
+                                "rejectUnauthorized": true
+                            }
+                        },
+                        {
+                            "id": 7,
+                            "module": "ai-tools:Extract",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": "{{4.data}}",
+                                "fields": [
+                                    {
+                                        "name": "member",
+                                        "type": "number",
+                                        "description": "會員人數"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 9,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "body": "{{1.events[].message.text}} 的會員數:\n{{7.member}} 個會員",
+                                "status": "200",
+                                "headers": []
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 12,
+                            "module": "http:ActionSendData",
+                            "version": 3,
+                            "parameters": {
+                                "handleErrors": true,
+                                "useNewZLibDeCompress": true
+                            },
+                            "filter": {
+                                "name": "path check",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{11.path}}",
+                                            "b": "3",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "ca": "",
+                                "qs": [],
+                                "url": "{{1.events[].message.text}}",
+                                "gzip": true,
+                                "method": "get",
+                                "headers": [],
+                                "timeout": "",
+                                "useMtls": false,
+                                "authPass": "",
+                                "authUser": "",
+                                "bodyType": "",
+                                "serializeUrl": false,
+                                "shareCookies": false,
+                                "parseResponse": false,
+                                "followRedirect": true,
+                                "useQuerystring": false,
+                                "followAllRedirects": false,
+                                "rejectUnauthorized": true
+                            }
+                        },
+                        {
+                            "id": 13,
+                            "module": "regexp:AdvancedParser",
+                            "version": 1,
+                            "parameters": {
+                                "global": false,
+                                "multiline": true,
+                                "sensitive": false,
+                                "singleline": false,
+                                "advancedParser": true,
+                                "continueWhenNoRes": false
+                            },
+                            "mapper": {
+                                "text": "{{12.data}}",
+                                "pattern": "\"totalAdmins\":.*?\"onlineUsers\":\\[\\]\\}"
+                            }
+                        },
+                        {
+                            "id": 14,
+                            "module": "openai-gpt-3:CreateCompletion",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 3319401
+                            },
+                            "mapper": {
+                                "model": "gpt-4.1-mini",
+                                "top_p": "1",
+                                "select": "chat",
+                                "messages": [
+                                    {
+                                        "role": "user",
+                                        "content": "將以下資料轉成JSON格式:\n{{13.__IMTMATCH__}}",
+                                        "imageDetail": "auto"
+                                    }
+                                ],
+                                "max_tokens": "0",
+                                "temperature": "1",
+                                "n_completions": "1",
+                                "response_format": "json_object",
+                                "parseJSONResponse": false
+                            }
+                        },
+                        {
+                            "id": 15,
+                            "module": "json:ParseJSON",
+                            "version": 1,
+                            "parameters": {
+                                "type": ""
+                            },
+                            "mapper": {
+                                "json": "{{14.choices[].message.content}}"
+                            }
+                        },
+                        {
+                            "id": 16,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "status": "200",
+                                "body": "{{1.events[].message.text}} 查詢結果:\n1 總會員數: {{15.totalMembers}}\n2 總貼文數: {{15.totalPosts}}\n3 此Skool創建日: {{formatDate(15.createdAt; \"YYYY-MM-DD hh:mm A\"; \"Asia/Taipei\")}}",
+                                "headers": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us1.make.com",
+        "notes": []
+    }
+}
